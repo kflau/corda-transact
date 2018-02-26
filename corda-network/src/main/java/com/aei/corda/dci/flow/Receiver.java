@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 @InitiatedBy(Distributor.class)
 public class Receiver extends FlowLogic<String> {
 
-    static private final Logger logger = LoggerFactory.getLogger(Receiver.class);
+    private static final Logger logger = LoggerFactory.getLogger(Receiver.class);
 
     private final ProgressTracker.Step RECEIVE_INSTRUMENT = new ProgressTracker.Step("Receive instrument.");
 

@@ -1,11 +1,13 @@
 apply plugin: 'java'
-apply plugin: 'eclipse-wtp'
+apply plugin: 'idea'
 apply plugin: 'org.springframework.boot'
-apply plugin: 'war'
+apply plugin: 'application'
 
 group = 'com.aei'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = 1.8
+
+//ext['artemis.version'] = "$artemis_version"
 
 repositories {
 	mavenLocal()
@@ -14,10 +16,57 @@ repositories {
 }
 
 configurations {
-	providedRuntime
+	runtimeProvided
 }
 
 dependencies {
-	compile("org.springframework.boot:spring-boot-starter-web")
-	testCompile("org.springframework.boot:spring-boot-starter-test")
+	compile(project(":corda-network")) {
+		exclude module: "crash.shell"
+		exclude module: "library"
+		exclude module: "artemis-amqp-protocol"
+		exclude module: "artemis-core-client"
+		exclude module: "artemis-server"
+		exclude module: "artemis-rpc"
+		exclude module: "commons-logging"
+		exclude module: "log4j-slf4j-impl"
+		exclude module: "log4j-web"
+	}
+
+//	compile "com.google.guava:guava:$guavaVersion"
+	compile("org.apache.activemq:artemis-core-client:2.1.0")
+	compile("org.apache.activemq:artemis-commons:2.1.0")
+	compile("net.corda:corda-rpc:2.0.0") {
+		exclude module: "artemis-commons"
+		exclude module: "commons-logging"
+		exclude module: "log4j-slf4j-impl"
+		exclude module: "log4j-web"
+	}
+	compile("org.apache.activemq:artemis-amqp-protocol:2.1.0") {
+		exclude module: "artemis-jms-client"
+		exclude module: "artemis-server"
+		exclude module: "artemis-core-client"
+		exclude module: "artemis-commons"
+	}
+
+	compile "org.slf4j:jcl-over-slf4j:1.7.25"
+	compile "ch.qos.logback:logback-classic:1.2.3"
+	compile("org.springframework.boot:spring-boot-starter-web") {
+		exclude module: "commons-logging"
+	}
+	compile "org.springframework.boot:spring-boot-starter-actuator"
+	testCompile "org.springframework.boot:spring-boot-starter-test"
 }
+
+//jar {
+//	from sourceSets.test.output
+//	dependsOn clientInstall
+//}
+
+//task demoJar(type: Jar) {
+//	classifier "test"
+//	from sourceSets.test.output
+//}
+//
+//artifacts {
+//	demoArtifacts demoJar
+//}

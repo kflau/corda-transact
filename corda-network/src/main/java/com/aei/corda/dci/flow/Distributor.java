@@ -13,7 +13,7 @@ import java.util.List;
 @StartableByRPC
 public class Distributor extends FlowLogic<Void> {
 
-    static private final Logger logger = LoggerFactory.getLogger(Distributor.class);
+    private static final Logger logger = LoggerFactory.getLogger(Distributor.class);
 
     private final ProgressTracker.Step DISTRIBUTE_INSTRUMENT = new ProgressTracker.Step("Distribute instrument.");
 

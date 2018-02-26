@@ -14,7 +14,7 @@ import static net.corda.core.contracts.ContractsDSL.requireThat;
 
 public class InstrumentContract implements Contract {
 
-    public static final String INSTRUMENT_CONTRACT_ID = "com.example.contract.InstrumentContract";
+    public static final String INSTRUMENT_CONTRACT_ID = InstrumentContract.class.getName();
 
     @Override
     public void verify(LedgerTransaction tx) {

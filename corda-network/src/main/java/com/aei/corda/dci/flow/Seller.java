@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 @InitiatedBy(Buyer.class)
 public class Seller extends FlowLogic<SignedTransaction> {
 
-    static private final Logger logger = LoggerFactory.getLogger(Seller.class);
+    private static final Logger logger = LoggerFactory.getLogger(Seller.class);
 
     private final ProgressTracker.Step DISTRIBUTE_INSTRUMENT = new ProgressTracker.Step("Distribute instrument.");
     private final ProgressTracker.Step PENDING_PLACE_ORDER = new ProgressTracker.Step("Pending place order.");
@@ -86,8 +86,9 @@ public class Seller extends FlowLogic<SignedTransaction> {
 
             progressTracker.setCurrentStep(ORDER_CONFIRM);
             FxRateOracle fxRateOracle = serviceHub.cordaService(FxRateOracle.class);
-            List<BigDecimal> spots = fxRateOracle.querySpot();
-            List<BigDecimal> strikes = fxRateOracle.queryStrike();
+
+            List<BigDecimal> spots = fxRateOracle.query();
+            List<BigDecimal> strikes = fxRateOracle.query();
             LinkedHashMap<String, Object> parameters = Maps.newLinkedHashMap();
             parameters.put("spots", spots);
             parameters.put("strikes", strikes);

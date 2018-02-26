@@ -20,7 +20,7 @@ import static net.corda.core.contracts.ContractsDSL.requireThat;
 @StartableByRPC
 public class Buyer extends FlowLogic<SignedTransaction> {
 
-    static private final Logger logger = LoggerFactory.getLogger(Buyer.class);
+    private static final Logger logger = LoggerFactory.getLogger(Buyer.class);
 
     private final ProgressTracker.Step PLACE_ORDER = new ProgressTracker.Step("Place order.");
     private final ProgressTracker.Step ORDER_CONFIRM = new ProgressTracker.Step("Confirm order.");
@@ -33,7 +33,6 @@ public class Buyer extends FlowLogic<SignedTransaction> {
             AWAIT_SIGNED_TRANSACTION,
             SIGNING_TRANSACTION
     );
-
     private Party counterparty;
     private String instrument;
 
