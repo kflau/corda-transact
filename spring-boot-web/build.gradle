@@ -7,8 +7,6 @@ group = 'com.aei'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = 1.8
 
-//ext['artemis.version'] = "$artemis_version"
-
 repositories {
 	mavenLocal()
 	jcenter()
@@ -32,7 +30,6 @@ dependencies {
 		exclude module: "log4j-web"
 	}
 
-//	compile "com.google.guava:guava:$guavaVersion"
 	compile("org.apache.activemq:artemis-core-client:2.1.0")
 	compile("org.apache.activemq:artemis-commons:2.1.0")
 	compile("net.corda:corda-rpc:2.0.0") {
@@ -56,17 +53,3 @@ dependencies {
 	compile "org.springframework.boot:spring-boot-starter-actuator"
 	testCompile "org.springframework.boot:spring-boot-starter-test"
 }
-
-//jar {
-//	from sourceSets.test.output
-//	dependsOn clientInstall
-//}
-
-//task demoJar(type: Jar) {
-//	classifier "test"
-//	from sourceSets.test.output
-//}
-//
-//artifacts {
-//	demoArtifacts demoJar
-//}
