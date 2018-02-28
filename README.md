@@ -21,7 +21,9 @@ Below commands help to build the project under project root:
 
 `gradlew clean build deployNodes -x test`
 
-To run corda R3 network, run corda-network/build/nodes/runnodes.
+To run corda R3 network
+
+`corda-network/build/nodes/runnodes`
 
 This spawns 4 processes for Controller, Party A, Party B and Party C. By default each node exposes AMQP and RPC ports
 and the notary is validating mode. These settings are accessible via corda-network/build.gradle and, of course, 
