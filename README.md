@@ -2,7 +2,7 @@
 
 **Abstract**
 
-Dual Currency Investment (DCI) is a FX structural product that buy side quotes to different counter parties and
+Dual Currency Investment (DCI) is a FX structural product that buy side quotes prices from different counter parties and
 places order to one counter party. Traditionally a subset of data in buy side relational database is synchronized in the 
 counter parties database using FIX when placing orders. This project simulates the operations in a distributed ledge 
 manner. In blockchains technology, distributed ledge is publicly accessible, which is undesired behaviour in banking 
