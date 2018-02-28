@@ -4,6 +4,7 @@ import com.aei.corda.dci.state.InstrumentState;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import net.corda.core.contracts.StateAndRef;
@@ -34,22 +35,26 @@ public class InstrumentQueryController {
 
     @Autowired
     private ObjectMapper objectMapper;
-    @Autowired
+    @Autowired(required = false)
     private CordaRPCOps rpcOps;
 
     @PostConstruct
     public void init() {
-        myLegalName = rpcOps.nodeInfo().getLegalIdentities().get(0).getName();
+        if (rpcOps != null) {
+            myLegalName = rpcOps.nodeInfo().getLegalIdentities().get(0).getName();
+        }
         serviceNames = ImmutableList.of("Controller", "Network Map Service");
     }
 
     @RequestMapping(value = "/me", method = RequestMethod.GET)
     public Map<String, CordaX500Name> whoami() {
+        Preconditions.checkNotNull(rpcOps, "CordaRPC not enabled");
         return ImmutableMap.of("me", myLegalName);
     }
 
     @RequestMapping(value = "/peers", method = RequestMethod.GET)
     public Map<String, List<CordaX500Name>> getPeers() {
+        Preconditions.checkNotNull(rpcOps, "CordaRPC not enabled");
         List<NodeInfo> nodeInfoSnapshot = rpcOps.networkMapSnapshot();
         return ImmutableMap.of("peers", nodeInfoSnapshot
                 .stream()
@@ -60,6 +65,7 @@ public class InstrumentQueryController {
 
     @RequestMapping(value = "/instruments", method = RequestMethod.GET)
     public List<JsonNode> getInstrumentStates() {
+        Preconditions.checkNotNull(rpcOps, "CordaRPC not enabled");
         List<StateAndRef<InstrumentState>> states = rpcOps.vaultQuery(InstrumentState.class).getStates();
         return states.stream().map(instrumentStateStateAndRef -> {
             ObjectNode objectNode = objectMapper.createObjectNode();

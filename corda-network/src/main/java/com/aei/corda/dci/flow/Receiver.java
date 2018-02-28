@@ -15,9 +15,9 @@ public class Receiver extends FlowLogic<String> {
 
     private static final Logger logger = LoggerFactory.getLogger(Receiver.class);
 
-    private final ProgressTracker.Step RECEIVE_INSTRUMENT = new ProgressTracker.Step("Receive instrument.");
+    private ProgressTracker.Step RECEIVE_INSTRUMENT = new ProgressTracker.Step("Receive instrument.");
 
-    private final ProgressTracker progressTracker = new ProgressTracker(
+    private ProgressTracker progressTracker = new ProgressTracker(
             RECEIVE_INSTRUMENT
     );
 

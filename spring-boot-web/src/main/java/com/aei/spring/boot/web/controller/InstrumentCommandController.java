@@ -2,6 +2,7 @@ package com.aei.spring.boot.web.controller;
 
 import com.aei.corda.dci.flow.Buyer;
 import com.aei.corda.dci.flow.Distributor;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import joptsimple.internal.Strings;
 import net.corda.core.identity.CordaX500Name;
@@ -30,12 +31,14 @@ public class InstrumentCommandController {
     private CordaX500Name myLegalName;
     private List<String> serviceNames;
 
-    @Autowired
+    @Autowired(required = false)
     private CordaRPCOps rpcOps;
 
     @PostConstruct
     public void init() {
-        myLegalName = rpcOps.nodeInfo().getLegalIdentities().get(0).getName();
+        if (rpcOps != null) {
+            myLegalName = rpcOps.nodeInfo().getLegalIdentities().get(0).getName();
+        }
         serviceNames = ImmutableList.of("Controller", "Network Map Service");
     }
 
@@ -43,18 +46,17 @@ public class InstrumentCommandController {
     public ResponseEntity<String> distribute(
             @RequestParam("instrument") String instrument,
             @RequestParam("partyName") String partyName) {
+        Preconditions.checkNotNull(rpcOps, "CordaRPC not enabled");
         if (Strings.isNullOrEmpty(instrument)) {
             return ResponseEntity.badRequest().body("Query parameter 'instrument' must be non-negative.");
         }
         if (Strings.isNullOrEmpty(partyName)) {
             return ResponseEntity.badRequest().body("Query parameter 'partyName' missing or has wrong format.");
         }
-
-        final Party counterparty = rpcOps.wellKnownPartyFromX500Name(CordaX500Name.parse(partyName));
+        Party counterparty = rpcOps.wellKnownPartyFromX500Name(CordaX500Name.parse(partyName));
         if (counterparty == null) {
             return ResponseEntity.badRequest().body(String.format("Party named %s cannot be found.", partyName));
         }
-
         try {
             rpcOps.startTrackedFlowDynamic(Distributor.class, ImmutableList.of(counterparty), instrument);
 
@@ -62,7 +64,7 @@ public class InstrumentCommandController {
             return ResponseEntity.ok(msg);
 
         } catch (Throwable ex) {
-            final String msg = ex.getMessage();
+            String msg = ex.getMessage();
             logger.error(ex.getMessage(), ex);
             return ResponseEntity.badRequest().body(msg);
         }
@@ -72,31 +74,29 @@ public class InstrumentCommandController {
     public ResponseEntity<String> order(
             @RequestParam("instrument") String instrument,
             @RequestParam("partyName") String partyName) {
+        Preconditions.checkNotNull(rpcOps, "CordaRPC not enabled");
         if (Strings.isNullOrEmpty(instrument)) {
             return ResponseEntity.badRequest().body("Query parameter 'instrument' must be non-negative.");
         }
         if (Strings.isNullOrEmpty(partyName)) {
             return ResponseEntity.badRequest().body("Query parameter 'partyName' missing or has wrong format.");
         }
-
-        final Party counterparty = rpcOps.wellKnownPartyFromX500Name(CordaX500Name.parse(partyName));
+        Party counterparty = rpcOps.wellKnownPartyFromX500Name(CordaX500Name.parse(partyName));
         if (counterparty == null) {
             return ResponseEntity.badRequest().body(String.format("Party named %s cannot be found", partyName));
         }
-
         try {
             FlowProgressHandle<SignedTransaction> flowHandle = rpcOps.startTrackedFlowDynamic(Buyer.class, counterparty, instrument);
             flowHandle.getProgress().subscribe(evt -> logger.info(">> {}", evt));
 
-            final SignedTransaction result = flowHandle
+            SignedTransaction result = flowHandle
                     .getReturnValue()
                     .get();
 
-            final String msg = String.format("Transaction id %s committed to ledger.", result.getId());
+            String msg = String.format("Transaction id %s committed to ledger.", result.getId());
             return ResponseEntity.status(HttpStatus.CREATED).body(msg);
-
         } catch (Throwable ex) {
-            final String msg = ex.getMessage();
+            String msg = ex.getMessage();
             logger.error(ex.getMessage(), ex);
             return ResponseEntity.badRequest().body(msg);
         }

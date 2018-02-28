@@ -22,12 +22,12 @@ public class Buyer extends FlowLogic<SignedTransaction> {
 
     private static final Logger logger = LoggerFactory.getLogger(Buyer.class);
 
-    private final ProgressTracker.Step PLACE_ORDER = new ProgressTracker.Step("Place order.");
-    private final ProgressTracker.Step ORDER_CONFIRM = new ProgressTracker.Step("Confirm order.");
-    private final ProgressTracker.Step AWAIT_SIGNED_TRANSACTION = new ProgressTracker.Step("Place order.");
-    private final ProgressTracker.Step SIGNING_TRANSACTION = new ProgressTracker.Step("Signing transaction with our private key.");
+    private ProgressTracker.Step PLACE_ORDER = new ProgressTracker.Step("Place order.");
+    private ProgressTracker.Step ORDER_CONFIRM = new ProgressTracker.Step("Confirm order.");
+    private ProgressTracker.Step AWAIT_SIGNED_TRANSACTION = new ProgressTracker.Step("Place order.");
+    private ProgressTracker.Step SIGNING_TRANSACTION = new ProgressTracker.Step("Signing transaction with our private key.");
 
-    private final ProgressTracker progressTracker = new ProgressTracker(
+    private ProgressTracker progressTracker = new ProgressTracker(
             PLACE_ORDER,
             ORDER_CONFIRM,
             AWAIT_SIGNED_TRANSACTION,

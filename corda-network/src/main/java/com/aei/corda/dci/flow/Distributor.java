@@ -15,9 +15,9 @@ public class Distributor extends FlowLogic<Void> {
 
     private static final Logger logger = LoggerFactory.getLogger(Distributor.class);
 
-    private final ProgressTracker.Step DISTRIBUTE_INSTRUMENT = new ProgressTracker.Step("Distribute instrument.");
+    private ProgressTracker.Step DISTRIBUTE_INSTRUMENT = new ProgressTracker.Step("Distribute instrument.");
 
-    private final ProgressTracker progressTracker = new ProgressTracker(
+    private ProgressTracker progressTracker = new ProgressTracker(
             DISTRIBUTE_INSTRUMENT
     );
 

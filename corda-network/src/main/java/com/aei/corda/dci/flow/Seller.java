@@ -12,8 +12,11 @@ import net.corda.core.contracts.Command;
 import net.corda.core.contracts.StateAndContract;
 import net.corda.core.flows.*;
 import net.corda.core.identity.AbstractParty;
+import net.corda.core.identity.CordaX500Name;
 import net.corda.core.identity.Party;
+import net.corda.core.node.NodeInfo;
 import net.corda.core.node.ServiceHub;
+import net.corda.core.node.services.NetworkMapCache;
 import net.corda.core.transactions.SignedTransaction;
 import net.corda.core.transactions.TransactionBuilder;
 import net.corda.core.utilities.ProgressTracker;
@@ -23,33 +26,37 @@ import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+@InitiatingFlow
 @InitiatedBy(Buyer.class)
 public class Seller extends FlowLogic<SignedTransaction> {
 
     private static final Logger logger = LoggerFactory.getLogger(Seller.class);
+    private static final String BOOKKEEPER_NODENAME = "O=Bookkeeper,L=London,C=GB";
 
-    private final ProgressTracker.Step DISTRIBUTE_INSTRUMENT = new ProgressTracker.Step("Distribute instrument.");
-    private final ProgressTracker.Step PENDING_PLACE_ORDER = new ProgressTracker.Step("Pending place order.");
-    private final ProgressTracker.Step ORDER_PLACED = new ProgressTracker.Step("Pending place order.");
-    private final ProgressTracker.Step ORDER_CONFIRM = new ProgressTracker.Step("Confirm order.");
-    private final ProgressTracker.Step GENERATING_TRANSACTION = new ProgressTracker.Step("Generating transaction.");
-    private final ProgressTracker.Step SIGNING_TRANSACTION = new ProgressTracker.Step("Signing transaction with our private key.");
-    private final ProgressTracker.Step NOTIFY_SIGNED_TRANSACTION = new ProgressTracker.Step("Notify counteryparties about signed transaction.");
-    private final ProgressTracker.Step VERIFYING_TRANSACTION = new ProgressTracker.Step("Verifying contract constraints.");
-    private final ProgressTracker.Step GATHERING_SIGS = new ProgressTracker.Step("Gathering the counterparty's signature.") {
+    private ProgressTracker.Step DISTRIBUTE_INSTRUMENT = new ProgressTracker.Step("Distribute instrument.");
+    private ProgressTracker.Step PENDING_PLACE_ORDER = new ProgressTracker.Step("Pending place order.");
+    private ProgressTracker.Step ORDER_PLACED = new ProgressTracker.Step("Pending place order.");
+    private ProgressTracker.Step ORDER_CONFIRM = new ProgressTracker.Step("Confirm order.");
+    private ProgressTracker.Step GENERATING_TRANSACTION = new ProgressTracker.Step("Generating transaction.");
+    private ProgressTracker.Step SIGNING_TRANSACTION = new ProgressTracker.Step("Signing transaction with our private key.");
+    private ProgressTracker.Step NOTIFY_SIGNED_TRANSACTION = new ProgressTracker.Step("Notify counteryparties about signed transaction.");
+    private ProgressTracker.Step VERIFYING_TRANSACTION = new ProgressTracker.Step("Verifying contract constraints.");
+    private ProgressTracker.Step BOOKKEEPING = new ProgressTracker.Step("Bookkeeping transaction.");
+    private ProgressTracker.Step GATHERING_SIGS = new ProgressTracker.Step("Gathering the counterparty's signature.") {
         @Override public ProgressTracker childProgressTracker() {
             return CollectSignaturesFlow.Companion.tracker();
         }
     };
-    private final ProgressTracker.Step FINALISING_TRANSACTION = new ProgressTracker.Step("Obtaining notary signature and recording transaction.") {
+    private ProgressTracker.Step FINALISING_TRANSACTION = new ProgressTracker.Step("Obtaining notary signature and recording transaction.") {
         @Override public ProgressTracker childProgressTracker() {
             return FinalityFlow.Companion.tracker();
         }
     };
 
-    private final ProgressTracker progressTracker = new ProgressTracker(
+    private ProgressTracker progressTracker = new ProgressTracker(
             DISTRIBUTE_INSTRUMENT,
             PENDING_PLACE_ORDER,
             ORDER_PLACED,
@@ -59,6 +66,7 @@ public class Seller extends FlowLogic<SignedTransaction> {
             NOTIFY_SIGNED_TRANSACTION,
             VERIFYING_TRANSACTION,
             GATHERING_SIGS,
+            BOOKKEEPING,
             FINALISING_TRANSACTION
     );
 
@@ -78,7 +86,11 @@ public class Seller extends FlowLogic<SignedTransaction> {
     public SignedTransaction call() throws FlowException {
         try {
             ServiceHub serviceHub = getServiceHub();
-            Party notary = serviceHub.getNetworkMapCache().getNotaryIdentities().get(0);
+            NetworkMapCache networkMapCache = serviceHub.getNetworkMapCache();
+            List<NodeInfo> allNodes = networkMapCache.getAllNodes();
+            Party notary = networkMapCache.getNotaryIdentities().get(0);
+            NodeInfo myInfo = serviceHub.getMyInfo();
+            List<Party> legalIdentities = myInfo.getLegalIdentities();
 
             progressTracker.setCurrentStep(ORDER_PLACED);
             String instrument = counterpartySession.receive(String.class).unwrap(data -> data);
@@ -99,7 +111,7 @@ public class Seller extends FlowLogic<SignedTransaction> {
             progressTracker.setCurrentStep(GENERATING_TRANSACTION);
             InstrumentState instrumentState = new InstrumentState(
                     instrument,
-                    serviceHub.getMyInfo().getLegalIdentities().get(0),
+                    legalIdentities.get(0),
                     counterpartySession.getCounterparty());
             Command<InstrumentContract.Commands.Create> txCommand = new Command<>(
                     new InstrumentContract.Commands.Create(),
@@ -122,6 +134,18 @@ public class Seller extends FlowLogic<SignedTransaction> {
                     partSignedTx,
                     Sets.newHashSet(counterpartySession),
                     CollectSignaturesFlow.Companion.tracker()));
+
+            progressTracker.setCurrentStep(BOOKKEEPING);
+            Optional<Party> bookkeeperOptional = allNodes.stream()
+                    .filter(nodeInfo -> CordaX500Name.parse(BOOKKEEPER_NODENAME).equals(
+                            nodeInfo.getLegalIdentities().get(0).getName()))
+                    .map(nodeInfo -> nodeInfo.getLegalIdentities().get(0))
+                    .findFirst();
+            if (bookkeeperOptional.isPresent()) {
+                Party bookkeeper = bookkeeperOptional.get();
+                FlowSession bookkeeperSession = initiateFlow(bookkeeper);
+                bookkeeperSession.send(instrument);
+            }
 
             progressTracker.setCurrentStep(FINALISING_TRANSACTION);
             return subFlow(new FinalityFlow(fullySignedTx));
