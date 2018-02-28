@@ -13,7 +13,7 @@ industry since transaction states between parties should be confidential.
 This project is a hackathon simulating the basic use case to distribute and execute DCI orders in Corda R3. 
 There are 3 parties (A,B,C) in Corda R3 network. Party A is from sell side while Party B and C are from buy side.
 Under Corda R3 distributed ledge platform, any transaction states of orders place involving Party A and B are visible 
-to them but not Party C.
+to them but not Party C, vice versa.
 
 **Getting Started**
 
