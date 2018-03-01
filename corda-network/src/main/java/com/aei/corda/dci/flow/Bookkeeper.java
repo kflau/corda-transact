@@ -37,18 +37,14 @@ public class Bookkeeper extends FlowLogic<Void> {
     @Suspendable
     @Override
     public Void call() throws FlowException {
-        try {
-            ServiceHub serviceHub = getServiceHub();
-            Party notary = serviceHub.getNetworkMapCache().getNotaryIdentities().get(0);
+        ServiceHub serviceHub = getServiceHub();
+        Party notary = serviceHub.getNetworkMapCache().getNotaryIdentities().get(0);
 
-            progressTracker.setCurrentStep(BOOKKEEPING);
-            String instrument = counterpartySession.receive(String.class).unwrap(data -> data);
-            Preconditions.checkNotNull(instrument, "Seller receives order for nothing");
+        progressTracker.setCurrentStep(BOOKKEEPING);
+        String instrument = counterpartySession.receive(String.class).unwrap(data -> data);
+        Preconditions.checkNotNull(instrument, "Seller receives order for nothing");
 
-            logger.debug("Received {} for bookkeeping", instrument);
-            return null;
-        } catch (Exception ex) {
-            throw new FlowException(ex);
-        }
+        logger.debug("Received {} for bookkeeping", instrument);
+        return null;
     }
 }
