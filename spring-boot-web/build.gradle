@@ -30,15 +30,15 @@ dependencies {
 		exclude module: "log4j-web"
 	}
 
-	compile("org.apache.activemq:artemis-core-client:2.1.0")
-	compile("org.apache.activemq:artemis-commons:2.1.0")
-	compile("net.corda:corda-rpc:2.0.0") {
+	compile("org.apache.activemq:artemis-core-client:$artemisVersion")
+	compile("org.apache.activemq:artemis-commons:$artemisVersion")
+	compile("net.corda:corda-rpc:$corda_release_version") {
 		exclude module: "artemis-commons"
 		exclude module: "commons-logging"
 		exclude module: "log4j-slf4j-impl"
 		exclude module: "log4j-web"
 	}
-	compile("org.apache.activemq:artemis-amqp-protocol:2.1.0") {
+	compile("org.apache.activemq:artemis-amqp-protocol:$artemisVersion") {
 		exclude module: "artemis-jms-client"
 		exclude module: "artemis-server"
 		exclude module: "artemis-core-client"
