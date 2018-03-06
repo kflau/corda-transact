@@ -28,3 +28,7 @@ To run corda R3 network
 This spawns 4 processes for Controller, Party A, Party B and Party C. By default each node exposes AMQP and RPC ports
 and the notary is validating mode. These settings are accessible via corda-network/build.gradle and, of course, 
 individual configuration is amendable, e.g. corda-network/build/nodes/PartyA/node.conf.
+
+**Coveat**
+
+* Registering custom notary nodes is not supported in current corda version, corda patched as of https://github.com/corda/corda/commit/727cd0e55c9c992f2e337b2e26f3e8472ac9d8c1#diff-2ecd7b120b2ed0a7019f6d8a830d0cc5L643
