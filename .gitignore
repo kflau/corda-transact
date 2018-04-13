@@ -27,3 +27,8 @@ hs_err_pid*
 /corda-network/build
 /spring-boot-web/build
 /spring-boot-web/out
+.svn/entries
+.svn/format
+*.svn-base
+.svn/wc.db
+.svn/wc.db-journal
