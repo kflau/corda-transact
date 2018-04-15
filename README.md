@@ -1,4 +1,4 @@
-# corda-dci
+# corda-transact
 
 **Abstract**
 
