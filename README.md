@@ -2,7 +2,7 @@
 
 **Abstract**
 
-Dual Currency Investment (DCI) is a FX structural product that buy side quotes prices from different counter parties and
+FX structural product that buy side quotes prices from different counter parties and
 places order to one counter party. Traditionally a subset of data in buy side relational database is synchronized in the 
 counter parties database using FIX when placing orders. This project simulates the operations in a distributed ledge 
 manner. In blockchains technology, distributed ledge is publicly accessible, which is undesired behaviour in banking 
@@ -32,3 +32,4 @@ individual configuration is amendable, e.g. corda-network/build/nodes/PartyA/nod
 **Coveat**
 
 * Registering custom notary nodes is not supported in current corda version, corda patched as of https://github.com/corda/corda/commit/727cd0e55c9c992f2e337b2e26f3e8472ac9d8c1#diff-2ecd7b120b2ed0a7019f6d8a830d0cc5L643
+* To upgrade an existing ContractState, it is found that RuntimeException is thrown when ContractUpgradeFlow.Authorise is invoked
